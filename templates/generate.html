@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Playlist</title>
+</head>
+<body>
+    <h1>Gerador de Playlist</h1>
+    
+    <form method="post">
+        <label for ="genre">Gênero: </label>
+        <input type="text" name="genre" id="genre" required placeholder="Ex: rock, pop, jazz...">
+        <button type="submit">Gerar Playlist</button>
+    </form>
+
+    {% if musicas %}
+        <h2>Músicas do gênero <strong>{{ genre }}</strong>:</h2>
+        <ul>
+            {% for musica in musicas %}
+                <li>{{ musica }}</li>
+            {% endfor %}
+        </ul>
+    {% elif musicas is not none %}
+        <p>Nenhuma música encontrada para esse gênero.</p>
+    {% endif %}
+    
+    <br>
+    <a href="https://everynoise.com/" target="blank">Ver todos os generos disponíveis</a><br>
+    <br><a href="/">Voltar à página inicial</a>
+</body>
+</html>

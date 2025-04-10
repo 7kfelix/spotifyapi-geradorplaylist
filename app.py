@@ -38,23 +38,65 @@ def callback():
 def generate():
     if request.method == 'POST':
         genre = request.form.get('genre').lower()
+        quantity = int(request.form.get("quantidade", 10))
 
         token_info = session.get('token_info', None)
         if not token_info:
             return redirect('/login')
         
         sp = spotipy.Spotify(auth=token_info['access_token'])
-
         query = f'genre:{genre}'
 
-        results = sp.search(q=query, type='track', limit=10)
+        results = sp.search(q=query, type='track', limit=quantity)
 
         musicas = []
-        for item in results['tracks']['items']:
-            nome = item['name']
-            artistas = item['artists'][0]['name']
-            musicas.append(f'{nome} - {artistas}')
+        track_ids = []
+        limit_per_request = 50
+        offset = 0
 
-        return render_template('generate.html', musicas=musicas, genre=genre)
+        while len(musicas) < quantity:
+            remaining = quantity - len(musicas)
+            limit = min(limit_per_request, remaining)
+
+            results = sp.search(q=query, type='track', limit=limit, offset=offset)
+            items = results['tracks']['items']
+
+            if not items:
+                break
+
+            for item in results['tracks']['items']:
+                nome = item['name']
+                artistas = item['artists'][0]['name']
+                musicas.append(f'{nome} - {artistas}')
+                track_ids.append(item['id'])
+
+            offset += limit
+
+        session['track_ids'] = track_ids
+        session['genre'] = genre
+        if not items:
+            return render_template('generate.html', musicas=[], genre=genre, error="Nenhuma música encontrada para o gênero selecionado.")
+        else:
+            return render_template('generate.html', musicas=musicas, genre=genre)
     
     return render_template('generate.html')
+
+@app.route('/create_playlist', methods=['POST'])
+def create_playlist():
+    token_info = session.get('token_info')
+    if not token_info:
+        return redirect('/login')
+    
+    sp = spotipy.Spotify(auth=token_info['access_token'])
+    user_id = sp.current_user()['id']
+    track_ids = session.get('track_ids', [])
+    playlist_name = request.form.get('playlist_name', 'Minha Playlist')
+
+    if not track_ids:
+        return redirect('/generate')
+    
+    playlist = sp.user_playlist_create(user_id, playlist_name, public=True)
+    sp.playlist_add_items(playlist_id=playlist['id'], items=track_ids)
+
+    playlist_url = playlist['external_urls']['spotify']
+    return render_template('playlist_created.html', url=playlist_url)

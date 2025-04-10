@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,6 +12,20 @@
         <label for ="genre">Gênero: </label>
         <input type="text" name="genre" id="genre" required placeholder="Ex: rock, pop, jazz...">
         <button type="submit">Gerar Playlist</button>
+        <label for="quantidade">Quantidade de Músicas:</label>
+        <select name="quantidade" id="quantidade">
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="30">30</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+        </select>
+    </form>
+
+    <form action="/create_playlist" method="post">
+        <label for="playlist_name">Nome da Playlist:</label>
+        <input type="text" id="playlist_name" name="playlist_name" placeholder="Minha playlist personalizada" required>
+        <button type="submit">Enviar Playlist para o Spotify</button>
     </form>
 
     {% if musicas %}
@@ -22,8 +36,9 @@
             {% endfor %}
         </ul>
     {% elif musicas is not none %}
-        <p>Nenhuma música encontrada para esse gênero.</p>
+        <p>Escreva o gênero musical da sua escolha.</p>
     {% endif %}
+
     
     <br>
     <a href="https://everynoise.com/everynoise1d.html" target="blank">Ver todos os generos disponíveis</a><br>
